@@ -19,6 +19,19 @@ const Certificates: React.FC = () => {
     return gradients[index % gradients.length];
   };
 
+  // Create a combined array with certificates and continuous learning
+  const allItems = [
+    ...certificates,
+    {
+      id: 'continuous-learning',
+      name: 'Continuous Learning',
+      issuer: 'Professional Development',
+      date: 'Ongoing',
+      link: undefined,
+      isContinuousLearning: true
+    }
+  ];
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -33,19 +46,66 @@ const Certificates: React.FC = () => {
         </p>
       </div>
 
-      {/* Certificates Grid */}
+      {/* Certificates Grid - 2 columns, 3 rows */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {certificates.map((certificate, index) => {
+        {allItems.map((item, index) => {
+          const isContinuousLearning = 'isContinuousLearning' in item;
+          
+          if (isContinuousLearning) {
+            return (
+              <div 
+                key={item.id}
+                className="group relative bg-slate-800/30 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 hover:border-slate-600/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-green-500/10"
+              >
+                {/* Background Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-start gap-4">
+                    {/* Icon */}
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="flex-1">
+                      <h4 className="text-lg font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-green-200 group-hover:bg-clip-text transition-all duration-300">
+                        {item.name}
+                      </h4>
+                      <p className="text-slate-300 font-semibold mb-3">{item.issuer}</p>
+                      
+                      {/* Date */}
+                      <div className="flex items-center gap-2 text-slate-400 text-sm">
+                        <Calendar className="w-4 h-4" />
+                        <span className="bg-slate-700/50 px-2 py-1 rounded-full">
+                          {item.date}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Description for Continuous Learning */}
+                  <div className="mt-4 p-3 bg-slate-700/30 rounded-lg">
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      I'm committed to staying current with the latest technologies and industry best practices through continuous learning and professional development.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Regular certificate item
           const IconComponent = getCertificateIcon(index);
           const gradient = getCertificateGradient(index);
           
           return (
             <div 
-              key={certificate.id}
+              key={item.id}
               className="group relative bg-slate-800/30 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 hover:border-slate-600/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-blue-500/10"
             >
               {/* Background Gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500`}></div>
               
               <div className="relative z-10">
                 <div className="flex items-start gap-4">
@@ -57,22 +117,22 @@ const Certificates: React.FC = () => {
                   {/* Content */}
                   <div className="flex-1">
                     <h4 className="text-lg font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-blue-200 group-hover:bg-clip-text transition-all duration-300">
-                      {certificate.name}
+                      {item.name}
                     </h4>
-                    <p className="text-slate-300 font-semibold mb-3">{certificate.issuer}</p>
+                    <p className="text-slate-300 font-semibold mb-3">{item.issuer}</p>
                     
                     {/* Date and Link */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-slate-400 text-sm">
                         <Calendar className="w-4 h-4" />
                         <span className="bg-slate-700/50 px-2 py-1 rounded-full">
-                          {certificate.date}
+                          {item.date}
                         </span>
                       </div>
                       
-                      {certificate.link && (
+                      {item.link && (
                         <a 
-                          href={certificate.link} 
+                          href={item.link} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-700/50 rounded-lg group/link"
@@ -87,19 +147,6 @@ const Certificates: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
-      {/* Additional Info */}
-      <div className="text-center mt-12">
-        <div className="bg-slate-800/30 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/30 max-w-2xl mx-auto">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="w-6 h-6 text-green-500" />
-            <h4 className="text-lg font-semibold text-white">Continuous Learning</h4>
-          </div>
-          <p className="text-slate-400 text-sm leading-relaxed">
-            I'm committed to staying current with the latest technologies and industry best practices through continuous learning and professional development.
-          </p>
-        </div>
       </div>
     </div>
   );
