@@ -1,186 +1,221 @@
-import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Send, MessageCircle, ArrowRight } from 'lucide-react';
-import { personalInfo } from '../data/cvData';
+import { useEffect, useRef, useState, type ComponentType, type FormEvent } from 'react';
+import { ArrowUpRight, Check, Copy, Mail, MapPin, Phone, Send } from 'lucide-react';
+import { profile } from '../data/profile';
+import { useLanguage } from '../i18n/context';
+import { GitHubIcon, LinkedInIcon, WhatsAppIcon } from './BrandIcons';
+import Reveal from './Reveal';
+import Section from './Section';
 
-const Contact: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
+interface Channel {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  href: string;
+  ltr?: boolean;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Your message has been sent successfully! I will contact you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+export default function Contact() {
+  const { ui, t } = useLanguage();
+  const [copied, setCopied] = useState(false);
+  const [sent, setSent] = useState(false);
+  const copyTimer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(profile.email);
+      setCopied(true);
+      window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.location.href = `mailto:${profile.email}`;
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  // No backend: compose the message in the visitor's email app.
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const field = (name: string) => String(data.get(name) ?? '').trim();
+
+    const subject = field('subject') || `${ui.contact.form.defaultSubject} — ${field('name')}`;
+    const body = `${field('message')}\n\n— ${field('name')}\n${field('email')}`;
+    window.location.href = `mailto:${profile.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSent(true);
   };
+
+  const channels: Channel[] = [
+    { icon: WhatsAppIcon, label: ui.contact.whatsapp, value: profile.phone.display, href: profile.links.whatsapp, ltr: true },
+    { icon: LinkedInIcon, label: ui.contact.linkedin, value: ui.contact.viewProfile, href: profile.links.linkedin },
+    { icon: GitHubIcon, label: ui.contact.github, value: '@MonemDeveloper', href: profile.links.github, ltr: true },
+  ];
+
+  const { form } = ui.contact;
 
   return (
-    <section className="py-24 relative">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-20">
-          <div className="inline-block">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent mb-6">
-              Contact Me
-            </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
-          </div>
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mt-8 leading-relaxed">
-            Do you have a project in mind? Let's talk and turn your idea into reality
-          </p>
-        </div>
+    <Section id="contact" index="06" eyebrow={ui.contact.eyebrow} title={ui.contact.title} subtitle={ui.contact.subtitle}>
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-0 end-0 -z-10 h-[30rem] w-[30rem] rounded-full bg-teal-500/10 blur-[140px]" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-3xl font-bold text-white mb-8">Contact Information</h3>
-            
-            <div className="space-y-6">
-              <div className="group flex items-center gap-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-lg text-white">Email</h4>
-                  <a href={`mailto:${personalInfo.email}`} className="text-slate-300 hover:text-white transition-colors">
-                    {personalInfo.email}
-                  </a>
-                </div>
-              </div>
-
-              <div className="group flex items-center gap-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-lg text-white">Phone Number</h4>
-                  <a href={`tel:${personalInfo.phone}`} className="text-slate-300 hover:text-white transition-colors">
-                    {personalInfo.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="group flex items-center gap-4 p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 hover:-translate-y-1">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-lg text-white">Location</h4>
-                  <p className="text-slate-300">{personalInfo.location}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mt-8 space-y-4">
-              <h4 className="text-xl font-semibold text-white mb-4">Quick Contact</h4>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a 
-                  href={`mailto:${personalInfo.email}`}
-                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-blue-500/25"
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <Reveal className="min-w-0 space-y-4 lg:col-span-5">
+          <div className="card spotlight p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <span className="icon-tile">
+                <Mail className="h-[18px] w-[18px]" aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-slate-400">{ui.contact.email}</p>
+                <a
+                  href={`mailto:${profile.email}`}
+                  dir="ltr"
+                  className="mt-0.5 block truncate text-[15px] font-medium sm:text-base text-white transition-colors hover:text-teal-200 rtl:text-right"
                 >
-                  <Mail className="w-5 h-5" />
-                  Send Email
-                </a>
-                <a 
-                  href={`https://wa.me/${personalInfo.phone.replace(/\s+/g, '').replace('+', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-green-500/25"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  WhatsApp
+                  {profile.email}
                 </a>
               </div>
-            </div>
-          </div>
-
-          {/* Contact Form */}
-          <div>
-            <h3 className="text-3xl font-bold text-white mb-8">Send Message</h3>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-white mb-2">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-white placeholder-slate-400 transition-all duration-300"
-                    placeholder="Your full name"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-white mb-2">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-white placeholder-slate-400 transition-all duration-300"
-                    placeholder="your@email.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-white mb-2">Subject</label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-white placeholder-slate-400 transition-all duration-300"
-                  placeholder="Message subject"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium text-white mb-2">Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows={6}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-white placeholder-slate-400 resize-none transition-all duration-300"
-                  placeholder="Write your message here..."
-                />
-              </div>
-
               <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 flex items-center justify-center gap-2"
+                type="button"
+                onClick={copyEmail}
+                aria-label={ui.contact.copy}
+                title={ui.contact.copy}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10 text-slate-300 transition hover:border-white/25 hover:text-white"
               >
-                <Send className="w-5 h-5" />
-                Send Message
-                <ArrowRight className="w-4 h-4" />
+                {copied ? <Check className="h-4 w-4 text-teal-300" /> : <Copy className="h-4 w-4" />}
               </button>
-            </form>
+            </div>
+            <p aria-live="polite" className="sr-only">
+              {copied ? ui.contact.copied : ''}
+            </p>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
-export default Contact;
+          {channels.map(({ icon: Icon, label, value, href, ltr }) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card spotlight group flex items-center gap-4 p-5 sm:p-6"
+            >
+              <span className="icon-tile">
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm text-slate-400">{label}</span>
+                <span dir={ltr ? 'ltr' : undefined} className="mt-0.5 block truncate text-[15px] font-medium sm:text-base text-white rtl:text-right">
+                  {value}
+                </span>
+              </span>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="h-5 w-5 shrink-0 text-slate-500 transition group-hover:text-teal-300 rtl:-scale-x-100"
+              />
+            </a>
+          ))}
+
+          <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-2 text-sm text-slate-400">
+            <span className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-teal-300" aria-hidden="true" />
+              {ui.contact.basedIn} {t(profile.location)}
+            </span>
+            <a
+              href={`tel:${profile.phone.e164}`}
+              className="flex items-center gap-2 transition-colors hover:text-white"
+            >
+              <Phone className="h-4 w-4 text-teal-300" aria-hidden="true" />
+              {ui.contact.call}
+            </a>
+          </div>
+        </Reveal>
+
+        <Reveal delay={120} className="min-w-0 lg:col-span-7">
+          <form onSubmit={handleSubmit} className="card p-6 sm:p-8">
+            <h3 className="font-display text-xl font-semibold text-white">{form.title}</h3>
+
+            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+              <div>
+                <label htmlFor="contact-name" className="field-label">
+                  {form.name}
+                </label>
+                <input
+                  id="contact-name"
+                  name="name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  dir="auto"
+                  placeholder={form.namePlaceholder}
+                  className="field"
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-email" className="field-label">
+                  {form.email}
+                </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  dir="ltr"
+                  placeholder={form.emailPlaceholder}
+                  className="field rtl:text-right"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <label htmlFor="contact-subject" className="field-label">
+                {form.subject} <span className="font-normal text-slate-400">({form.optional})</span>
+              </label>
+              <input
+                id="contact-subject"
+                name="subject"
+                type="text"
+                dir="auto"
+                placeholder={form.subjectPlaceholder}
+                className="field"
+              />
+            </div>
+
+            <div className="mt-5">
+              <label htmlFor="contact-message" className="field-label">
+                {form.message}
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                required
+                rows={6}
+                dir="auto"
+                placeholder={form.messagePlaceholder}
+                className="field resize-y"
+              />
+            </div>
+
+            <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-400">{form.note}</p>
+              <button type="submit" className="btn-primary shrink-0">
+                <Send className="h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
+                {form.submit}
+              </button>
+            </div>
+
+            <p aria-live="polite" className={sent ? 'mt-5 rounded-xl border border-teal-300/20 bg-teal-300/[0.06] px-4 py-3 text-sm text-teal-100' : 'sr-only'}>
+              {sent && (
+                <>
+                  {form.sent}{' '}
+                  <a href={`mailto:${profile.email}`} dir="ltr" className="font-semibold underline underline-offset-4">
+                    {profile.email}
+                  </a>
+                  .
+                </>
+              )}
+            </p>
+          </form>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}

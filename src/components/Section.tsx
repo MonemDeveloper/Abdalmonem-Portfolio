@@ -1,53 +1,37 @@
-import React from 'react';
+import type { ReactNode } from 'react';
+import Highlight from './Highlight';
+import Reveal from './Reveal';
 
 interface SectionProps {
-  id?: string;
+  id: string;
+  index: string;
+  eyebrow: string;
   title: string;
   subtitle?: string;
-  children: React.ReactNode;
-  className?: string;
-  background?: 'dark' | 'darker' | 'gradient';
+  children: ReactNode;
 }
 
-const Section: React.FC<SectionProps> = ({ 
-  id, 
-  title, 
-  subtitle, 
-  children, 
-  className = '', 
-  background = 'dark' 
-}) => {
-  const backgroundClasses = {
-    dark: 'bg-slate-800/50 backdrop-blur-sm',
-    darker: 'bg-slate-900/70 backdrop-blur-sm',
-    gradient: 'bg-gradient-to-br from-slate-800/60 via-purple-900/40 to-slate-800/60 backdrop-blur-sm'
-  };
-
+export default function Section({ id, index, eyebrow, title, subtitle, children }: SectionProps) {
   return (
-    <section id={id} className={`py-24 relative ${backgroundClasses[background]} ${className}`}>
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.1%22%3E%3Ccircle cx=%2230%22 cy=%2230%22 r=%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
-      </div>
-      
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-20">
-          <div className="inline-block">
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent mb-6">
-              {title}
-            </h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
-          </div>
-          {subtitle && (
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto mt-8 leading-relaxed">
-              {subtitle}
-            </p>
-          )}
-        </div>
-        {children}
+    <section id={id} aria-labelledby={`${id}-title`} className="relative py-24 sm:py-32">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-white/10 to-transparent"
+      />
+      <div className="container-page">
+        <Reveal>
+          <p className="eyebrow">
+            <span className="text-slate-400">{index}</span>
+            <span aria-hidden="true" className="h-px w-8 bg-teal-300/40" />
+            {eyebrow}
+          </p>
+          <h2 id={`${id}-title`} className="section-title">
+            <Highlight text={title} />
+          </h2>
+          {subtitle && <p className="section-subtitle">{subtitle}</p>}
+        </Reveal>
+        <div className="mt-12 sm:mt-16">{children}</div>
       </div>
     </section>
   );
-};
-
-export default Section;
+}

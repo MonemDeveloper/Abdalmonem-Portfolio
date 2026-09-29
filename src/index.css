@@ -1,3 +1,202 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Inter', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Sora', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'IBM Plex Sans Arabic', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color-scheme: dark;
+  }
+
+  :root[lang='ar'] {
+    --font-sans: 'IBM Plex Sans Arabic', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'IBM Plex Sans Arabic', 'Sora', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  /* Letter-spacing breaks the joining of Arabic letters. */
+  :root[lang='ar'] * {
+    letter-spacing: 0 !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-slate-300 antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle film grain to add depth and prevent gradient banding. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: rgb(94 234 212 / 0.28);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(94 234 212 / 0.85);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  /* ---------- Typography ---------- */
+
+  .eyebrow {
+    @apply flex items-center gap-3 font-mono text-xs font-medium uppercase tracking-[0.2em] text-teal-300;
+  }
+
+  :root[lang='ar'] .eyebrow {
+    @apply text-sm font-semibold;
+  }
+
+  .hero-title {
+    @apply font-display text-[2.75rem] font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl;
+  }
+
+  .section-title {
+    @apply mt-5 max-w-3xl font-display text-[2rem] font-semibold leading-[1.15] tracking-tight text-white sm:text-5xl sm:leading-[1.1];
+  }
+
+  .section-subtitle {
+    @apply mt-5 max-w-2xl text-lg leading-relaxed text-slate-400;
+  }
+
+  .text-body {
+    @apply leading-relaxed text-slate-400;
+  }
+
+  :root[lang='ar'] .hero-title {
+    line-height: 1.3;
+  }
+
+  :root[lang='ar'] .section-title {
+    line-height: 1.45;
+  }
+
+  :root[lang='ar'] .section-subtitle,
+  :root[lang='ar'] .text-body {
+    line-height: 1.9;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-teal-200 via-cyan-300 to-sky-400 bg-clip-text text-transparent rtl:bg-gradient-to-l;
+    /* Keeps descenders inside the painted area. */
+    padding-block: 0.08em;
+  }
+
+  /* ---------- Surfaces ---------- */
+
+  .card {
+    @apply relative rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.04] to-white/[0.012] transition-colors duration-300;
+  }
+
+  .card:hover {
+    @apply border-white/[0.13];
+  }
+
+  /* Pointer-following glow; coordinates are set by a listener in App. */
+  .spotlight {
+    isolation: isolate;
+  }
+
+  .spotlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(440px circle at var(--mx, 50%) var(--my, 50%), rgb(94 234 212 / 0.075), transparent 45%);
+  }
+
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+
+  .bg-grid {
+    background-image: linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .icon-tile {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-teal-300/20 bg-teal-300/[0.08] text-teal-300;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 font-mono text-xs text-slate-300;
+  }
+
+  .chip-core {
+    @apply border-teal-300/30 bg-teal-300/[0.08] text-teal-100;
+  }
+
+  /* ---------- Controls ---------- */
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold transition duration-300;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-teal-300 to-cyan-300 text-ink-950 shadow-[0_10px_40px_-12px_rgba(94,234,212,0.65)] hover:-translate-y-0.5 hover:shadow-[0_16px_48px_-12px_rgba(94,234,212,0.8)];
+  }
+
+  .btn-secondary {
+    @apply btn border border-white/15 bg-white/[0.03] text-white hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.07];
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-[13px];
+  }
+
+  .icon-btn {
+    @apply grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.03] text-slate-300 transition duration-300 hover:-translate-y-0.5 hover:border-white/25 hover:text-white;
+  }
+
+  .field-label {
+    @apply mb-2 block text-sm font-medium text-slate-300;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-ink-900/70 px-4 py-3 text-[15px] text-white transition duration-200 placeholder:text-slate-500 hover:border-white/20 focus:border-teal-300/60 focus:outline-none focus:ring-4 focus:ring-teal-300/10;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-teal-300 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink-950;
+  }
+}
